@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Atom Defense</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a14;
+    color: #e0e0ff;
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    touch-action: manipulation;
+  }
+  #app {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+  }
+  .screen.active { display: flex; }
+
+  #menu {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 40%, #1a1a3a 0%, #0a0a14 70%);
+    padding: 20px;
+  }
+  #menu h1 {
+    font-size: 42px;
+    background: linear-gradient(90deg, #80c0ff, #c060ff, #ff80a0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: 900;
+    letter-spacing: 2px;
+  }
+  #menu .subtitle {
+    color: #8080b0;
+    margin-bottom: 40px;
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .menu-btn {
+    width: 240px;
+    padding: 16px;
+    margin: 6px 0;
+    background: #22223a;
+    color: #e0e0ff;
+    border: 2px solid #333355;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 1px;
+  }
+  .menu-btn:active { transform: scale(0.96); }
+  .menu-btn.primary {
+    background: linear-gradient(135deg, #4a4aff, #6a4aff);
+    border-color: #6a6aff;
+    box-shadow: 0 4px 20px rgba(100,100,255,0.4);
+  }
+  .menu-btn.danger {
+    background: #3a1a1a;
+    border-color: #6a2a2a;
+    color: #ff8080;
+  }
+  #menu-atoms {
+    margin-top: 30px;
+    color: #ffd060;
+    font-size: 14px;
+  }
+
+  #game {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  #game-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    background: #12121f;
+    border-bottom: 1px solid #22223a;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  #game-header .stat {
+    font-size: 13px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #1e1e30;
+  }
+  #game-header .stat .val { color: #80ffb0; }
+  #game-header .stat.atoms .val { color: #ffd060; }
+  #game-header .stat.hp .val { color: #ff8080; }
+
+  #canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #1a1a2e;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+  #tabs {
+    display: flex;
+    background: #12121f;
+    border-top: 1px solid #22223a;
+    flex-shrink: 0;
+  }
+  #tabs button {
+    flex: 1;
+    padding: 10px 4px;
+    background: transparent;
+    color: #8080b0;
+    border: none;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-bottom: 2px solid transparent;
+  }
+  #tabs button.active {
+    color: #e0e0ff;
+    border-bottom-color: #4a4aff;
+  }
+
+  #panel {
+    height: 38vh;
+    min-height: 220px;
+    background: #1a1a2e;
+    border-top: 2px solid #22223a;
+    overflow-y: auto;
+    padding: 8px;
+    flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  #panel::-webkit-scrollbar { width: 4px; }
+  #panel::-webkit-scrollbar-thumb { background: #4a4aff; border-radius: 2px; }
+
+  #panel h3 {
+    font-size: 11px;
+    margin-bottom: 6px;
+    color: #8080ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  #panel h3:not(:first-child) { margin-top: 12px; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #12121f;
+    border: 1px solid #333355;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .row.selected { border-color: #80ff80; background: #1a2a1a; }
+  .row.locked { opacity: 0.4; }
+  .row.disabled { opacity: 0.6; }
+
+  .row .symbol {
+    font-size: 20px;
+    font-weight: 900;
+    width: 30px;
+    text-align: center;
+  }
+  .row .info { flex: 1; min-width: 0; }
+  .row .name { font-weight: bold; font-size: 13px; margin-bottom: 2px; }
+  .row .desc { color: #9090b0; font-size: 10px; line-height: 1.3; }
+  .row .cost { color: #ffd060; font-size: 11px; font-weight: bold; }
+
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .counter button {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #333355;
+    color: #ffffff;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .counter button:active { transform: scale(0.9); }
+  .counter button:disabled { opacity: 0.4; }
+  .counter .val {
+    width: 26px;
+    text-align: center;
+    font-weight: bold;
+    color: #ffd060;
+  }
+
+  .buy-btn {
+    padding: 6px 12px;
+    background: #4a4aff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .buy-btn:active { transform: scale(0.95); }
+  .buy-btn:disabled { background: #333355; opacity: 0.5; }
+
+  .upg-btn {
+    padding: 5px 8px;
+    background: #4a4aff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .upg-btn:active { transform: scale(0.95); }
+  .upg-btn:disabled { background: #333355; opacity: 0.5; }
+  .upg-btn.hp {
+    background: #ff4040;
+  }
+  .upg-btn.hp:disabled { background: #333355; }
+
+  #tube-inventory {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: rgba(10,10,20,0.85);
+    border: 1px solid #333355;
+    border-radius: 10px;
+    padding: 6px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    z-index: 5;
+    pointer-events: auto;
+  }
+  #tube-inventory .label {
+    color: #8080b0;
+    font-size: 10px;
+    margin-right: 4px;
+    font-weight: bold;
+  }
+  .inv-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px 6px;
+    background: #22223a;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .inv-item.selected {
+    border-color: #80ff80;
+    background: #1a2a1a;
+  }
+  .inv-item .count {
+    color: #ffd060;
+    font-size: 10px;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    text-align: center;
+  }
+  .overlay.active { display: flex; }
+  .overlay h1 { font-size: 36px; margin-bottom: 10px; }
+  .overlay p {
+    color: #a0a0c0;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  #toast {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30,30,60,0.95);
+    color: #e0e0ff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 50;
+    border: 1px solid #4a4aff;
+    max-width: 90%;
+    text-align: center;
+  }
+  #toast.show { opacity: 1; }
+
+  #selected-hint {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30,30,60,0.9);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #80ff80;
+    border: 1px solid #4a4aff;
+    z-index: 5;
+    display: none;
+  }
+  #selected-hint.show { display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="screen active" id="menu">
+    <h1>ATOM<br>DEFENSE</h1>
+    <div class="subtitle">Tower Defense</div>
+    <button class="menu-btn primary" id="btn-play">▶ Играть</button>
+    <button class="menu-btn danger" id="btn-reset">🗑 Сбросить прогресс</button>
+    <div id="menu-atoms">💠 Атомов в сохранении: —</div>
+  </div>
+
+  <div class="screen" id="game">
+    <div id="game-header">
+      <div class="stat atoms">💠 <span class="val" id="hdr-atoms">0</span></div>
+      <div class="stat">🌊 <span class="val" id="hdr-level">1</span></div>
+      <div class="stat hp">🧪 <span class="val" id="hdr-hp">15</span></div>
+    </div>
+
+    <div id="canvas-wrap">
+      <canvas id="cv"></canvas>
+      <div id="selected-hint"></div>
+      <div id="tube-inventory">
+        <span class="label">⚛️ ЭЛЕМЕНТЫ:</span>
+      </div>
+    </div>
+
+    <div id="tabs">
+      <button class="active" data-tab="battle">⚔️ Бой</button>
+      <button data-tab="elements">⚛️ Элементы</button>
+      <button data-tab="lab">🧪 Лаборатория</button>
+    </div>
+
+    <div id="panel"></div>
+  </div>
+
+  <div class="overlay" id="overlay-gameover">
+    <h1 style="color:#ff5050;">💥 ПРОИГРЫШ</h1>
+    <p id="gameover-text"></p>
+    <button class="menu-btn primary" id="btn-restart">🔄 Заново</button>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+// ==================== КОНСТАНТЫ ====================
+const CW = 720, CH = 560;
+
+const PATH = [
+  {x: 40,  y: 60},  {x: 200, y: 60},  {x: 200, y: 180},
+  {x: 40,  y: 180}, {x: 40,  y: 300}, {x: 200, y: 300},
+  {x: 200, y: 420}, {x: 340, y: 420}, {x: 340, y: 180},
+  {x: 480, y: 180}, {x: 480, y: 420}, {x: 620, y: 420},
+  {x: 620, y: 120}, {x: 660, y: 120}
+];
+
+const SLOTS = [
+  {x: 120, y: 120}, {x: 120, y: 240}, {x: 120, y: 360},
+  {x: 270, y: 60},  {x: 270, y: 300}, {x: 410, y: 300},
+  {x: 410, y: 60},  {x: 550, y: 300}
+];
+
+const ATOM_TYPES = {
+  H:  {rings: 1, cost: 2,   color: '#80c0ff', name: 'Водород',  symbol: 'H',  unlockLevel: 1},
+  Li: {rings: 2, cost: 5,   color: '#ff80a0', name: 'Литий',    symbol: 'Li', unlockLevel: 2},
+  Cr: {rings: 3, cost: 10,  color: '#c0ff80', name: 'Хром',     symbol: 'Cr', unlockLevel: 5},
+  O:  {rings: 4, cost: 15,  color: '#ffb060', name: 'Кислород', symbol: 'O',  unlockLevel: 7},
+};
+
+const SUBSTANCES = {
+  LiH: {elements:['Li','H'], element:'fire',    color:'#ff5030', name:'LiH', effect:'Огонь 🔥 (AoE)'},
+  OH:  {elements:['O','H'],  element:'electric',color:'#60d0ff', name:'OH',  effect:'Электричество ⚡ (цепь на 2)'},
+  CrH: {elements:['Cr','H'], element:'plasma',  color:'#c060ff', name:'CrH', effect:'Плазма 🌩️ (замедление)'},
+  H2:  {elements:['H','H'],  element:'acid',    color:'#80ff60', name:'H₂',  effect:'Кислота 🧪 (DOT)'},
+};
+
+// HP ×2 (U/d: 4, остальные: 6)
+const QUARK_TYPES = {
+  U: {hp:4, color:'#4080ff', symbol:'U', resist:null,      reward:2,  speed:0.7},
+  d: {hp:4, color:'#ff4040', symbol:'d', resist:null,      reward:4,  speed:0.8},
+  s: {hp:6, color:'#40ff80', symbol:'s', resist:'fire',    reward:3,  speed:0.75},
+  c: {hp:6, color:'#ffe040', symbol:'c', resist:'acid',    reward:3,  speed:0.75},
+  b: {hp:6, color:'#ff9040', symbol:'b', resist:'plasma',  reward:3,  speed:0.75},
+  t: {hp:6, color:'#c060ff', symbol:'t', resist:'electric',reward:3,  speed:0.75},
+};
+
+const QUARK_ORDER = ['U','d','s','c','b','t'];
+
+const TUBE_UPGRADE_COST = 50;
+const TUBE_UPGRADE_HP = 2;
+const ELECTRON_UPGRADE_COST = 10;
+
+// ==================== ЗВУК ====================
+const Sound = {
+  ctx: null,
+  enabled: true,
+  init() {
+    if (!this.ctx) {
+      try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e) { this.enabled = false; }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  shoot() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(900, t);
+    filter.frequency.exponentialRampToValueAtTime(180, t + 0.13);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600 + Math.random() * 200, t);
+    osc.frequency.exponentialRampToValueAtTime(150, t + 0.11);
+    gain.gain.setValueAtTime(0.05, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+    osc.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(t); osc.stop(t + 0.14);
+  },
+  hit() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(300, t);
+    osc.frequency.exponentialRampToValueAtTime(80, t + 0.08);
+    gain.gain.setValueAtTime(0.04, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(t); osc.stop(t + 0.1);
+  },
+  pop() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(400, t);
+    osc.frequency.exponentialRampToValueAtTime(60, t + 0.15);
+    gain.gain.setValueAtTime(0.035, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(t); osc.stop(t + 0.17);
+  },
+  buy() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, t);
+    osc.frequency.exponentialRampToValueAtTime(900, t + 0.15);
+    gain.gain.setValueAtTime(0.06, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(t); osc.stop(t + 0.2);
+  },
+  hurt() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(200, t);
+    osc.frequency.exponentialRampToValueAtTime(50, t + 0.25);
+    gain.gain.setValueAtTime(0.07, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(t); osc.stop(t + 0.3);
+  },
+  smash() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(120, t);
+    osc.frequency.exponentialRampToValueAtTime(30, t + 0.35);
+    gain.gain.setValueAtTime(0.09, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(t); osc.stop(t + 0.42);
+  }
+};
+
+// ==================== СОСТОЯНИЕ ====================
+let state;
+
+function defaultState() {
+  return {
+    atoms: 10,
+    owned: {H:true, Li:false, Cr:false, O:false},
+    upgrades: {H:0, Li:0, Cr:0, O:0},
+    stock: {H:0, Li:0, Cr:0, O:0},
+    substances: {LiH:0, OH:0, CrH:0, H2:0},
+    towers: [],
+    quarks: [],
+    projectiles: [],
+    effects: [],
+    level: 1,
+    tubeHP: 15,
+    tubeMaxHP: 15,
+    spawnTimer: 3000,
+    spawnInterval: 5000, // 5 сек, сменится на 3 после 10 ур.
+    quarksInWave: 0,
+    waveActive: false,
+    selectedAtom: null,
+    selectedSubstance: null,
+    tab: 'battle',
+    gameOver: false,
+    quarkId: 0,
+    waveNumber: 0,
+    buyCounts: {H:1, Li:1, Cr:1, O:1},
+    totalSpawned: 0, // счётчик всех заспавненных кварков (для "каждый 15-й — крушитель")
+  };
+}
+
+function save() {
+  try {
+    const s = JSON.parse(JSON.stringify(state));
+    s.projectiles = [];
+    s.quarks = [];
+    s.effects = [];
+    s.towers = s.towers.map(t => ({slot:t.slot, type:t.type, sub:t.sub}));
+    localStorage.setItem('atomDefenseSaveV8', JSON.stringify(s));
+  } catch(e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('atomDefenseSaveV8');
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    s.towers = (s.towers || []).map(t => ({
+      slot: t.slot, type: t.type, sub: t.sub,
+      rings: ATOM_TYPES[t.type].rings,
+      electronsPerRing: 1 + (s.upgrades[t.type] || 0),
+      fireTimer: 0, ringIndex: 0, angle: 0,
+      shotAnimations: [],
+    }));
+    s.projectiles = [];
+    s.quarks = [];
+    s.effects = [];
+    s.tab = 'battle';
+    s.selectedAtom = null;
+    s.selectedSubstance = null;
+    s.gameOver = false;
+    if (!s.stock) s.stock = {H:0, Li:0, Cr:0, O:0};
+    if (!s.buyCounts) s.buyCounts = {H:1, Li:1, Cr:1, O:1};
+    if (s.totalSpawned === undefined) s.totalSpawned = 0;
+    return s;
+  } catch(e) { return null; }
+}
+
+function clearSave() {
+  localStorage.removeItem('atomDefenseSaveV8');
+}
+
+// ==================== CANVAS ====================
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let cw = 0, ch = 0;
+let viewScale = 1;
+let viewOffX = 0;
+let viewOffY = 0;
+let viewDPR = 1;
+
+function resizeCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
+
+  cw = Math.max(1, Math.floor(w * dpr));
+  ch = Math.max(1, Math.floor(h * dpr));
+
+  cv.width = cw;
+  cv.height = ch;
+  cv.style.width = w + 'px';
+  cv.style.height = h + 'px';
+
+  viewDPR = dpr;
+  const scaleX = cw / CW;
+  const scaleY = ch / CH;
+  viewScale = Math.min(scaleX, scaleY);
+  viewOffX = (cw - CW * viewScale) / 2;
+  viewOffY = (ch - CH * viewScale) / 2;
+}
+
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100));
+
+function screenToLogic(sx, sy) {
+  const rect = cv.getBoundingClientRect();
+  const cssX = sx - rect.left;
+  const cssY = sy - rect.top;
+  const pxX = cssX * viewDPR;
+  const pxY = cssY * viewDPR;
+  const lx = (pxX - viewOffX) / viewScale;
+  const ly = (pxY - viewOffY) / viewScale;
+  return { x: lx, y: ly };
+}
+
+// ==================== UI ====================
+const panel = document.getElementById('panel');
+const toastEl = document.getElementById('toast');
+let toastTimer = null;
+
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
+}
+
+function updateHeader() {
+  document.getElementById('hdr-atoms').textContent = Math.floor(state.atoms);
+  document.getElementById('hdr-level').textContent = state.level;
+  document.getElementById('hdr-hp').textContent = state.tubeHP + '/' + state.tubeMaxHP;
+}
+
+function updateSelectedHint() {
+  const el = document.getElementById('selected-hint');
+  if (state.selectedAtom) {
+    el.textContent = '⚛️ Ставим: ' + state.selectedAtom + ' — тап по слоту';
+    el.classList.add('show');
+  } else if (state.selectedSubstance) {
+    el.textContent = '🧪 Наложить: ' + state.selectedSubstance + ' — тап по башне';
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+
+document.querySelectorAll('#tabs button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.tab = btn.dataset.tab;
+    renderPanel();
+  };
+});
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  if (name === 'game') setTimeout(resizeCanvas, 50);
+}
+
+function updateMenu() {
+  const loaded = load();
+  const atoms = loaded ? Math.floor(loaded.atoms) : '—';
+  const lvl = loaded ? loaded.level : '—';
+  document.getElementById('menu-atoms').textContent = `💠 Атомов: ${atoms} · 🌊 Ур: ${lvl}`;
+}
+
+document.getElementById('btn-play').onclick = () => {
+  Sound.init();
+  const loaded = load();
+  state = loaded || defaultState();
+  if (!state.stock) state.stock = {H:0, Li:0, Cr:0, O:0};
+  if (!state.buyCounts) state.buyCounts = {H:1, Li:1, Cr:1, O:1};
+  if (state.totalSpawned === undefined) state.totalSpawned = 0;
+  state.gameOver = false;
+  document.getElementById('overlay-gameover').classList.remove('active');
+  showScreen('game');
+  setTimeout(resizeCanvas, 100);
+  updateHeader();
+  renderPanel();
+  updateTubeInventory();
+  updateSelectedHint();
+};
+
+document.getElementById('btn-reset').onclick = () => {
+  if (confirm('Точно сбросить весь прогресс?')) {
+    clearSave();
+    updateMenu();
+    toast('Прогресс сброшен');
+  }
+};
+
+document.getElementById('btn-restart').onclick = () => {
+  clearSave();
+  state = defaultState();
+  state.spawnTimer = 3000;
+  document.getElementById('overlay-gameover').classList.remove('active');
+  showScreen('game');
+  setTimeout(resizeCanvas, 50);
+  updateHeader();
+  renderPanel();
+  updateTubeInventory();
+  updateSelectedHint();
+};
+
+// ==================== ИНВЕНТАРЬ ====================
+function updateTubeInventory() {
+  const inv = document.getElementById('tube-inventory');
+  inv.innerHTML = '<span class="label">⚛️ ЭЛЕМЕНТЫ:</span>';
+  
+  let any = false;
+  for (const [key, atom] of Object.entries(ATOM_TYPES)) {
+    const count = state.stock[key] || 0;
+    if (count <= 0 && !state.owned[key]) continue;
+    any = true;
+    const item = document.createElement('div');
+    item.className = 'inv-item';
+    if (state.selectedAtom === key) item.classList.add('selected');
+    item.innerHTML = `<span style="color:${atom.color};font-weight:900;">${key}</span> <span class="count">${count}</span>`;
+    item.onclick = () => {
+      if (count <= 0) { toast('Купи ' + key + ' во вкладке «Элементы»'); return; }
+      if (state.selectedSubstance) state.selectedSubstance = null;
+      state.selectedAtom = state.selectedAtom === key ? null : key;
+      updateTubeInventory();
+      updateSelectedHint();
+      renderPanel();
+    };
+    inv.appendChild(item);
+  }
+  if (!any) {
+    const hint = document.createElement('span');
+    hint.style.cssText = 'color:#9090b0;font-size:10px;';
+    hint.textContent = 'Купи элементы во вкладке «Элементы»';
+    inv.appendChild(hint);
+  }
+}
+
+// ==================== ПАНЕЛЬ ====================
+function renderPanel() {
+  if (!state) return;
+  if (state.tab === 'battle') renderBattlePanel();
+  else if (state.tab === 'elements') renderElementsPanel();
+  else if (state.tab === 'lab') renderLabPanel();
+  updateHeader();
+  updateTubeInventory();
+  updateSelectedHint();
+}
+
+function renderBattlePanel() {
+  const pool = getQuarkPool(state.level);
+  panel.innerHTML = `
+    <h3>Волна ${state.waveNumber || '—'}</h3>
+    <div class="row">
+      <div class="info">
+        <div class="name">Состав волны</div>
+        <div class="desc">${pool.map(q => `<span style="color:${QUARK_TYPES[q].color};font-weight:bold;">${q}</span>`).join(' · ')}</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="info">
+        <div class="name">${state.waveActive ? 'Идёт волна' : 'До следующей волны'}</div>
+        <div class="desc">${state.waveActive 
+          ? `Осталось кварков: ${state.quarksInWave + state.quarks.length}` 
+          : `${Math.ceil(state.spawnTimer/1000)} сек`}</div>
+      </div>
+    </div>
+    <h3>Пробирка</h3>
+    <div class="row">
+      <div class="symbol" style="color:#80c0ff;">🧪</div>
+      <div class="info">
+        <div class="name">HP: ${state.tubeHP} / ${state.tubeMaxHP}</div>
+        <div class="desc">Если HP упадёт до 0 — конец игры</div>
+      </div>
+      <button class="upg-btn hp" data-tube-upg ${state.atoms < TUBE_UPGRADE_COST ? 'disabled' : ''}>
+        +${TUBE_UPGRADE_HP}HP (${TUBE_UPGRADE_COST}💠)
+      </button>
+    </div>
+    <h3>Башни (${state.towers.length}/8)</h3>
+    ${state.towers.length === 0 
+      ? `<div class="row"><div class="info"><div class="desc">Пока нет башен. Выбери элемент внизу и тапни по слоту.</div></div></div>`
+      : state.towers.map(t => `
+        <div class="row">
+          <div class="symbol" style="color:${ATOM_TYPES[t.type].color}">${t.type}</div>
+          <div class="info">
+            <div class="name">Слот ${t.slot + 1}${t.sub ? ` + ${t.sub}` : ''}</div>
+            <div class="desc">${t.rings} кол. · ${t.electronsPerRing} ē · цикл ${(2/t.rings).toFixed(2)}с</div>
+          </div>
+        </div>
+      `).join('')}
+    <h3>⚠️ Кварк-Крушитель</h3>
+    <div class="row"><div class="info"><div class="desc">
+      Каждый <b>15-й</b> кварк — крушитель (с двумя жёлтыми дугами).<br>
+      Он <b>уничтожает башню</b>, мимо которой проходит.
+    </div></div></div>
+    <h3>Как играть</h3>
+    <div class="row"><div class="info"><div class="desc">
+      • Тап по слоту — поставить выбранный элемент<br>
+      • <b>2 тапа</b> по башне — удалить (возврат элемента и 50%💠)<br>
+      • Тап по башне с выбранным веществом — наложить<br>
+      • Кнопка <b>+2HP</b> — прокачать пробирку
+    </div></div></div>
+  `;
+
+  const upgBtn = panel.querySelector('[data-tube-upg]');
+  if (upgBtn) {
+    upgBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (state.atoms < TUBE_UPGRADE_COST) { toast('Нужно ' + TUBE_UPGRADE_COST + '💠'); return; }
+      state.atoms -= TUBE_UPGRADE_COST;
+      state.tubeMaxHP += TUBE_UPGRADE_HP;
+      state.tubeHP += TUBE_UPGRADE_HP;
+      Sound.buy();
+      toast(`🧪 +${TUBE_UPGRADE_HP} HP (${state.tubeMaxHP})`);
+      save();
+      renderPanel();
+    };
+  }
+}
+
+function renderElementsPanel() {
+  let html = `<h3>Элементы</h3>`;
+  for (const [key, atom] of Object.entries(ATOM_TYPES)) {
+    const owned = state.owned[key];
+    const locked = state.level < atom.unlockLevel;
+    const stock = state.stock[key] || 0;
+    const upg = state.upgrades[key] || 0;
+    const electrons = 1 + upg;
+    const buyCount = state.buyCounts[key] || 1;
+    const totalCost = atom.cost * buyCount;
+    const canBuy = owned && !locked && state.atoms >= totalCost;
+    
+    let cls = 'row';
+    if (locked) cls += ' locked';
+    if (state.selectedAtom === key) cls += ' selected';
+    
+    html += `
+      <div class="${cls}" data-atom="${key}">
+        <div class="symbol" style="color:${atom.color}">${atom.symbol}</div>
+        <div class="info">
+          <div class="name">${atom.name} ${owned ? `(в наличии: ${stock})` : ''}</div>
+          <div class="desc">${atom.rings} кол. · ${electrons} ē · цикл ${(2/atom.rings).toFixed(2)}с</div>
+          ${locked 
+            ? `<div class="desc" style="color:#ff6060;">🔒 Откроется на ур. ${atom.unlockLevel}</div>`
+            : owned
+              ? `<div class="cost">${atom.cost}💠 × ${buyCount} = ${totalCost}💠</div>`
+              : `<div class="cost">Открыть за ${atom.cost}💠</div>`}
+        </div>
+        ${locked ? '' : owned ? `
+          <div class="counter">
+            <button data-dec="${key}" ${buyCount <= 1 ? 'disabled' : ''}>−</button>
+            <div class="val">${buyCount}</div>
+            <button data-inc="${key}">+</button>
+          </div>
+          <button class="buy-btn" data-buy="${key}" ${!canBuy ? 'disabled' : ''}>Купить</button>
+        ` : `
+          <button class="buy-btn" data-unlock="${key}" ${state.atoms < atom.cost ? 'disabled' : ''}>Открыть</button>
+        `}
+      </div>
+      ${owned && !locked ? `
+        <div class="row">
+          <div class="info">
+            <div class="desc">Апгрейд: +1 ē на кольцо за ${ELECTRON_UPGRADE_COST}💠 (сейчас +${upg})</div>
+          </div>
+          <button class="upg-btn" data-upgrade="${key}" ${state.atoms < ELECTRON_UPGRADE_COST ? 'disabled' : ''}>+1 ē (${ELECTRON_UPGRADE_COST}💠)</button>
+        </div>
+      ` : ''}
+    `;
+  }
+  panel.innerHTML = html;
+
+  panel.querySelectorAll('[data-dec]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.dec;
+      state.buyCounts[key] = Math.max(1, (state.buyCounts[key] || 1) - 1);
+      renderPanel();
+    };
+  });
+  panel.querySelectorAll('[data-inc]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.inc;
+      state.buyCounts[key] = Math.min(99, (state.buyCounts[key] || 1) + 1);
+      renderPanel();
+    };
+  });
+  panel.querySelectorAll('[data-buy]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.buy;
+      const atom = ATOM_TYPES[key];
+      const count = state.buyCounts[key] || 1;
+      const totalCost = atom.cost * count;
+      if (state.atoms < totalCost) { toast('Мало атомов'); return; }
+      state.atoms -= totalCost;
+      state.stock[key] = (state.stock[key] || 0) + count;
+      Sound.buy();
+      toast(`Куплено ${key} ×${count}`);
+      save();
+      renderPanel();
+    };
+  });
+  panel.querySelectorAll('[data-unlock]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.unlock;
+      const atom = ATOM_TYPES[key];
+      if (state.atoms < atom.cost) { toast('Мало атомов'); return; }
+      state.atoms -= atom.cost;
+      state.owned[key] = true;
+      Sound.buy();
+      toast(`Открыт ${key}!`);
+      save();
+      renderPanel();
+    };
+  });
+  panel.querySelectorAll('[data-upgrade]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.upgrade;
+      if (state.atoms < ELECTRON_UPGRADE_COST) { toast('Нужно ' + ELECTRON_UPGRADE_COST + ' атомов'); return; }
+      state.atoms -= ELECTRON_UPGRADE_COST;
+      state.upgrades[key] = (state.upgrades[key] || 0) + 1;
+      for (const t of state.towers) {
+        if (t.type === key) t.electronsPerRing = 1 + state.upgrades[key];
+      }
+      Sound.buy();
+      toast(`${key} → +1 ē`);
+      save();
+      renderPanel();
+    };
+  });
+  panel.querySelectorAll('[data-atom]').forEach(el => {
+    el.onclick = (e) => {
+      if (e.target.closest('button')) return;
+      const key = el.dataset.atom;
+      if (!state.owned[key]) return;
+      if ((state.stock[key] || 0) <= 0) { toast('Сначала купи ' + key); return; }
+      if (state.selectedSubstance) state.selectedSubstance = null;
+      state.selectedAtom = state.selectedAtom === key ? null : key;
+      renderPanel();
+    };
+  });
+}
+
+// ==================== ЛАБОРАТОРИЯ ====================
+function canCraftSubstance(key) {
+  const sub = SUBSTANCES[key];
+  const need = {};
+  for (const e of sub.elements) need[e] = (need[e] || 0) + 1;
+  for (const [el, cnt] of Object.entries(need)) {
+    if ((state.stock[el] || 0) < cnt) return false;
+  }
+  return true;
+}
+
+function craftSubstance(key) {
+  const sub = SUBSTANCES[key];
+  if (!sub.elements.every(e => state.owned[e])) {
+    toast('Нужны открытые элементы: ' + sub.elements.join(', '));
+    return false;
+  }
+  if (!canCraftSubstance(key)) {
+    const need = {};
+    for (const e of sub.elements) need[e] = (need[e] || 0) + 1;
+    const missing = [];
+    for (const [el, cnt] of Object.entries(need)) {
+      if ((state.stock[el] || 0) < cnt) missing.push(`${el}×${cnt - (state.stock[el] || 0)}`);
+    }
+    toast('Не хватает: ' + missing.join(', '));
+    return false;
+  }
+  for (const e of sub.elements) {
+    state.stock[e]--;
+  }
+  state.substances[key] = (state.substances[key] || 0) + 1;
+  Sound.buy();
+  toast(`Создано ${sub.name}!`);
+  save();
+  renderPanel();
+  return true;
+}
+
+function renderLabPanel() {
+  let html = `<h3>Лаборатория</h3>
+    <div class="row"><div class="info"><div class="desc">
+      Соединение <b>тратит</b> элементы из инвентаря.<br>
+      Пример: <b>1 Li + 1 H</b> → <b>1 LiH</b>. Элементы пропадут.
+    </div></div></div>
+    <h3>Рецепты</h3>`;
+  
+  for (const [key, sub] of Object.entries(SUBSTANCES)) {
+    const can = canCraftSubstance(key);
+    const open = sub.elements.every(e => state.owned[e]);
+    const stock = state.substances[key] || 0;
+    const selected = state.selectedSubstance === key && stock > 0;
+    
+    const need = {};
+    for (const e of sub.elements) need[e] = (need[e] || 0) + 1;
+    const stockInfo = Object.entries(need).map(([el, cnt]) => {
+      const have = state.stock[el] || 0;
+      const color = have >= cnt ? '#80ff80' : '#ff6060';
+      return `<span style="color:${color};">${el}×${cnt} (есть ${have})</span>`;
+    }).join(' · ');
+    
+    let cls = 'row';
+    if (!open) cls += ' locked';
+    else if (!can) cls += ' disabled';
+    if (selected) cls += ' selected';
+    
+    html += `
+      <div class="${cls}" data-sub="${key}">
+        <div class="info">
+          <div class="name" style="color:${sub.color}">${sub.elements.join(' + ')} → ${sub.name}</div>
+          <div class="desc">${sub.effect}</div>
+          <div class="desc" style="margin-top:2px;">${stockInfo}</div>
+          <div class="desc">В запасе веществ: <b style="color:#ffd060;">${stock}</b></div>
+        </div>
+        <button class="buy-btn" data-craft="${key}" ${!can ? 'disabled' : ''}>Создать</button>
+      </div>
+    `;
+  }
+  html += `<h3>Выбрать вещество для наложения</h3>`;
+  for (const [key, sub] of Object.entries(SUBSTANCES)) {
+    const count = state.substances[key] || 0;
+    const selected = state.selectedSubstance === key && count > 0;
+    html += `
+      <div class="row ${selected ? 'selected' : ''}" data-sub-stock="${key}" style="${count > 0 ? '' : 'opacity:0.5;'}">
+        <div class="info">
+          <div class="name" style="color:${sub.color}">${sub.name} (${sub.element})</div>
+          <div class="desc">${count > 0 ? 'Тап — выбрать, потом тап по башне' : 'Нет в запасе'}</div>
+        </div>
+        <div class="cost">${count}${selected ? ' ✓' : ''}</div>
+      </div>
+    `;
+  }
+  panel.innerHTML = html;
+
+  panel.querySelectorAll('[data-craft]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      craftSubstance(btn.dataset.craft);
+    };
+  });
+  panel.querySelectorAll('[data-sub-stock]').forEach(el => {
+    el.onclick = () => {
+      const key = el.dataset.subStock;
+      if ((state.substances[key] || 0) <= 0) { toast('Нет в запасе'); return; }
+      if (state.selectedAtom) state.selectedAtom = null;
+      state.selectedSubstance = state.selectedSubstance === key ? null : key;
+      renderPanel();
+    };
+  });
+}
+
+// ==================== БАШНИ ====================
+function placeTower(slotIndex, type) {
+  if (state.towers.find(t => t.slot === slotIndex)) { toast('Слот занят'); return false; }
+  if (!state.owned[type]) { toast(`${type} не открыт`); return false; }
+  if ((state.stock[type] || 0) <= 0) { toast(`Нет ${type} — купи во вкладке «Элементы»`); return false; }
+  
+  state.stock[type]--;
+  state.towers.push({
+    slot: slotIndex, type: type, sub: null,
+    rings: ATOM_TYPES[type].rings,
+    electronsPerRing: 1 + (state.upgrades[type] || 0),
+    fireTimer: 0, ringIndex: 0, angle: 0,
+    shotAnimations: [],
+  });
+  Sound.buy();
+  toast(`${type} → слот ${slotIndex + 1}`);
+  save();
+  renderPanel();
+  return true;
+}
+
+function removeTower(slotIndex) {
+  const idx = state.towers.findIndex(t => t.slot === slotIndex);
+  if (idx === -1) return;
+  const t = state.towers[idx];
+  state.stock[t.type] = (state.stock[t.type] || 0) + 1;
+  if (t.sub) {
+    state.substances[t.sub] = (state.substances[t.sub] || 0) + 1;
+  }
+  let refund = 0;
+  if (t.type !== 'H') {
+    refund = Math.floor(ATOM_TYPES[t.type].cost * 0.5);
+    state.atoms += refund;
+  }
+  state.towers.splice(idx, 1);
+  toast(`−${t.type}${refund ? ' +' + refund + '💠' : ''}`);
+  save();
+  renderPanel();
+}
+
+function applySubstance(tower, subKey) {
+  if ((state.substances[subKey] || 0) <= 0) { toast('Нет в запасе'); return; }
+  if (tower.sub) {
+    state.substances[tower.sub] = (state.substances[tower.sub] || 0) + 1;
+  }
+  state.substances[subKey]--;
+  tower.sub = subKey;
+  Sound.buy();
+  toast(`${subKey} → ${tower.type}`);
+  save();
+  renderPanel();
+}
+
+// ==================== ВРАГИ ====================
+function spawnQuark() {
+  const pool = getQuarkPool(state.level);
+  const type = pool[Math.floor(Math.random() * pool.length)];
+  const q = QUARK_TYPES[type];
+
+  state.totalSpawned++;
+  const isSmash = (state.totalSpawned % 15 === 0);
+
+  // Случайная быстрая скорость: 25% шанс, что кварк будет в 2 раза быстрее
+  const isFast = Math.random() < 0.25;
+  const speedMult = isFast ? 2 : 1;
+
+  state.quarks.push({
+    id: state.quarkId++,
+    type,
+    hp: q.hp, maxHp: q.hp,
+    color: q.color,
+    symbol: q.symbol,
+    resist: q.resist,
+    reward: q.reward,
+    speed: q.speed * speedMult,
+    isFast,
+    isSmash,
+    pathIndex: 0,
+    x: PATH[0].x, y: PATH[0].y,
+    slowTimer: 0, dotTimer: 0, dotDmg: 0,
+    size: isSmash ? 18 : 14,
+    wobble: Math.random() * Math.PI * 2,
+    passedSlots: [], // индексы слотов, мимо которых прошёл (для крушителя)
+  });
+
+  if (isSmash) {
+    toast('💀 Кварк-Крушитель!');
+  }
+}
+
+// ==================== БОЙ ====================
+function updateTowers(dt) {
+  for (const t of state.towers) {
+    for (let i = t.shotAnimations.length - 1; i >= 0; i--) {
+      t.shotAnimations[i].life -= dt;
+      if (t.shotAnimations[i].life <= 0) t.shotAnimations.splice(i, 1);
+    }
+    t.angle += dt * 0.002;
+    t.fireTimer += dt;
+    const interval = 2000 / t.rings;
+    if (t.fireTimer >= interval) {
+      t.fireTimer -= interval;
+      const target = findTarget(t);
+      if (target) fireElectron(t, target);
+    }
+  }
+}
+
+function findTarget(tower) {
+  let best = null, bestProgress = -1;
+  const s = SLOTS[tower.slot];
+  for (const q of state.quarks) {
+    const dist = Math.hypot(q.x - s.x, q.y - s.y);
+    if (dist < 240 && q.pathIndex > bestProgress) {
+      bestProgress = q.pathIndex;
+      best = q;
+    }
+  }
+  return best;
+}
+
+function fireElectron(tower, target) {
+  const slot = SLOTS[tower.slot];
+  const sub = tower.sub ? SUBSTANCES[tower.sub] : null;
+  const element = sub ? sub.element : null;
+  
+  const ringIdx = tower.ringIndex % tower.rings;
+  tower.ringIndex = (tower.ringIndex + 1) % tower.rings;
+  
+  const radius = 12 + ringIdx * 7;
+  const baseAngle = (performance.now() / 500 + ringIdx * Math.PI * 0.7);
+  const startX = slot.x + Math.cos(baseAngle) * radius;
+  const startY = slot.y + Math.sin(baseAngle) * radius * 0.5;
+  
+  tower.shotAnimations.push({ring: ringIdx, angle: baseAngle, life: 250, maxLife: 250});
+  
+  let projType = 'electron';
+  if (element === 'fire') projType = 'fire';
+  else if (element === 'electric') projType = 'electric';
+  else if (element === 'acid') projType = 'acid';
+  else if (element === 'plasma') projType = 'plasma';
+  
+  state.projectiles.push({
+    x: startX, y: startY,
+    target, speed: 500,
+    element, damage: 1,
+    color: element ? sub.color : '#80c0ff',
+    projType,
+    tower,
+    isAoE: element === 'fire',
+    isChain: element === 'electric',
+    isSlow: element === 'plasma',
+    isAcid: element === 'acid',
+    trail: [],
+    zigPhase: Math.random() * Math.PI * 2,
+    startX, startY,
+    flightTime: 0,
+  });
+  
+  Sound.shoot();
+}
+
+function updateProjectiles(dt) {
+  const dtSec = dt / 1000;
+  for (let i = state.projectiles.length - 1; i >= 0; i--) {
+    const p = state.projectiles[i];
+    if (!p.target || p.target.hp <= 0) { state.projectiles.splice(i, 1); continue; }
+    const dx = p.target.x - p.x;
+    const dy = p.target.y - p.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 10) {
+      hitTarget(p);
+      state.projectiles.splice(i, 1);
+      continue;
+    }
+    p.trail.push({x: p.x, y: p.y, life: 220});
+    if (p.trail.length > 8) p.trail.shift();
+    for (const tr of p.trail) tr.life -= dt;
+    
+    const move = p.speed * dtSec;
+    if (move >= dist) { p.x = p.target.x; p.y = p.target.y; }
+    else { p.x += (dx/dist)*move; p.y += (dy/dist)*move; }
+    p.flightTime += dt;
+    p.zigPhase += dt * 0.02;
+  }
+}
+
+function hitTarget(p) {
+  const q = p.target;
+  if (!q || q.hp <= 0) return;
+  Sound.hit();
+
+  if (p.element && q.resist === p.element) {
+    state.effects.push({x:q.x, y:q.y, text:'СОПР', color:'#ffffff', life:600, maxLife:600, vy:-30});
+    return;
+  }
+  q.hp -= p.damage;
+  
+  if (p.isAoE) {
+    for (const other of state.quarks) {
+      if (other === q || other.hp <= 0) continue;
+      if (Math.hypot(other.x - q.x, other.y - q.y) < 60 && other.resist !== 'fire') other.hp -= 1;
+    }
+    state.effects.push({x:q.x, y:q.y, text:'🔥', life:400, maxLife:400, vy:-40, isEmoji:true});
+  }
+  if (p.isChain) {
+    let chained = 0;
+    for (const other of state.quarks) {
+      if (other === q || other.hp <= 0 || chained >= 2) continue;
+      if (Math.hypot(other.x - q.x, other.y - q.y) < 100 && other.resist !== 'electric') {
+        other.hp -= 1; chained++;
+        state.effects.push({x:other.x, y:other.y, text:'⚡', life:300, maxLife:300, vy:-30, isEmoji:true});
+      }
+    }
+  }
+  if (p.isSlow) q.slowTimer = 1500;
+  if (p.isAcid) { q.dotTimer = 3000; q.dotDmg = 1; }
+  
+  if (q.hp <= 0) killQuark(q);
+}
+
+function killQuark(q) {
+  state.atoms += q.reward;
+  Sound.pop();
+  state.effects.push({x:q.x, y:q.y, text:`+${q.reward}`, color:'#ffd060', life:700, maxLife:700, vy:-50});
+  const idx = state.quarks.indexOf(q);
+  if (idx !== -1) state.quarks.splice(idx, 1);
+}
+
+function updateQuarks(dt) {
+  const dtSec = dt / 1000;
+  for (let i = state.quarks.length - 1; i >= 0; i--) {
+    const q = state.quarks[i];
+    q.wobble += dt * 0.005;
+    let speedMult = 1;
+    if (q.slowTimer > 0) { q.slowTimer -= dt; speedMult = 0.5; }
+    if (q.dotTimer > 0) {
+      q.dotTimer -= dt;
+      if (Math.floor(q.dotTimer / 500) !== Math.floor((q.dotTimer + dt) / 500)) {
+        q.hp -= q.dotDmg;
+        state.effects.push({x:q.x, y:q.y-10, text:'🧪', life:400, maxLife:400, vy:-20, isEmoji:true});
+        if (q.hp <= 0) { killQuark(q); continue; }
+      }
+    }
+    if (q.pathIndex >= PATH.length - 1) {
+      state.tubeHP--;
+      Sound.hurt();
+      state.effects.push({x: PATH[PATH.length-1].x + 20, y: PATH[PATH.length-1].y, text:'-1 HP', color:'#ff4040', life:800, maxLife:800, vy:-40});
+      state.quarks.splice(i, 1);
+      updateHeader();
+      save();
+      if (state.tubeHP <= 0) { gameOver(); return; }
+      continue;
+    }
+    const targetPt = PATH[q.pathIndex + 1];
+    const dx = targetPt.x - q.x;
+    const dy = targetPt.y - q.y;
+    const dist = Math.hypot(dx, dy);
+    const move = q.speed * 100 * dtSec * speedMult;
+
+    // Проверка: крушитель проходит мимо башни
+    if (q.isSmash) {
+      checkSmashPass(q);
+    }
+
+    if (move >= dist) { q.x = targetPt.x; q.y = targetPt.y; q.pathIndex++; }
+    else { q.x += (dx/dist)*move; q.y += (dy/dist)*move; }
+  }
+}
+
+// Проверка: если крушитель проходит рядом с башней (в радиусе 40), которую ещё не ломал — уничтожаем
+function checkSmashPass(q) {
+  for (let i = 0; i < SLOTS.length; i++) {
+    if (q.passedSlots.includes(i)) continue;
+    const s = SLOTS[i];
+    const d = Math.hypot(q.x - s.x, q.y - s.y);
+    if (d < 40) {
+      const towerIdx = state.towers.findIndex(t => t.slot === i);
+      if (towerIdx !== -1) {
+        const t = state.towers[towerIdx];
+        // Уничтожаем башню (не возвращаем ресурсы)
+        state.towers.splice(towerIdx, 1);
+        Sound.smash();
+        state.effects.push({
+          x: s.x, y: s.y,
+          text: '💥',
+          life: 800, maxLife: 800, vy: -30, isEmoji: true,
+        });
+        toast(`💥 Крушитель снёс ${t.type}!`);
+      }
+      q.passedSlots.push(i);
+    }
+  }
+}
+
+function updateEffects(dt) {
+  for (let i = state.effects.length - 1; i >= 0; i--) {
+    const e = state.effects[i];
+    e.life -= dt;
+    e.y += e.vy * dt / 1000;
+    if (e.life <= 0) state.effects.splice(i, 1);
+  }
+}
+
+// ==================== ВОЛНЫ ====================
+function getQuarkPool(level) {
+  if (level <= 3) return ['U'];
+  if (level <= 6) return ['U','d'];
+  if (level <= 9) return ['U','d','s'];
+  if (level <= 12) return ['U','d','s','c'];
+  if (level <= 15) return ['U','d','s','c','b'];
+  return ['U','d','s','c','b','t'];
+}
+
+function getSpawnCount(level) {
+  return Math.round((3 + level) * 1.5);
+}
+
+// Перерыв: 5с до 10 уровня, 3с после
+function getWaveInterval(level) {
+  return level < 10 ? 5000 : 3000;
+}
+
+function updateWaves(dt) {
+  if (state.gameOver) return;
+  if (!state.waveActive) {
+    state.spawnTimer -= dt;
+    if (state.spawnTimer <= 0) startWave();
+  } else {
+    state.spawnTimer -= dt;
+    if (state.spawnTimer <= 0 && state.quarksInWave > 0) {
+      spawnQuark();
+      state.quarksInWave--;
+      state.spawnTimer = 1200;
+    }
+    if (state.quarksInWave <= 0 && state.quarks.length === 0) {
+      state.waveActive = false;
+      state.level++;
+      state.spawnTimer = getWaveInterval(state.level);
+      state.spawnInterval = state.spawnTimer;
+      if (state.level === 2) toast('⚛️ Открыт Li!');
+      if (state.level === 4) toast('⚛️ Новый кварк: d!');
+      if (state.level === 5) toast('⚛️ Открыт Cr!');
+      if (state.level === 7) toast('⚛️ Открыт O!');
+      if (state.level === 7) toast('⚛️ Новый кварк: s!');
+      if (state.level === 10) toast('⚛️ Новый кварк: c! Перерыв волн: 3с');
+      if (state.level === 13) toast('⚛️ Новый кварк: b!');
+      if (state.level === 16) toast('⚛️ Новый кварк: t!');
+      save();
+      renderPanel();
+    }
+  }
+}
+
+function startWave() {
+  state.waveActive = true;
+  state.waveNumber++;
+  state.quarksInWave = getSpawnCount(state.level);
+  state.spawnTimer = 0;
+  toast(`🌊 Волна ${state.waveNumber}`);
+  renderPanel();
+}
+
+function gameOver() {
+  state.gameOver = true;
+  clearSave();
+  document.getElementById('gameover-text').textContent = 
+    `Дошёл до уровня ${state.level}. Волн пройдено: ${state.waveNumber - 1}.`;
+  document.getElementById('overlay-gameover').classList.add('active');
+}
+
+// ==================== РЕНДЕР ====================
+function draw() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = '#0a0a14';
+  ctx.fillRect(0, 0, cw, ch);
+
+  ctx.save();
+  ctx.translate(viewOffX, viewOffY);
+  ctx.scale(viewScale, viewScale);
+
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, CW, CH);
+
+  drawPath();
+  drawSlots();
+  drawTube();
+  drawTowers();
+  drawQuarks();
+  drawProjectiles();
+  drawEffects();
+
+  ctx.restore();
+}
+
+function drawPath() {
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#2a2a4a';
+  ctx.lineWidth = 40;
+  ctx.beginPath();
+  ctx.moveTo(PATH[0].x, PATH[0].y);
+  for (let i = 1; i < PATH.length; i++) ctx.lineTo(PATH[i].x, PATH[i].y);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#3a3a5a';
+  ctx.lineWidth = 36;
+  ctx.beginPath();
+  ctx.moveTo(PATH[0].x, PATH[0].y);
+  for (let i = 1; i < PATH.length; i++) ctx.lineTo(PATH[i].x, PATH[i].y);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#4a4a6a';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 8]);
+  ctx.beginPath();
+  ctx.moveTo(PATH[0].x, PATH[0].y);
+  for (let i = 1; i < PATH.length; i++) ctx.lineTo(PATH[i].x, PATH[i].y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawSlots() {
+  for (let i = 0; i < SLOTS.length; i++) {
+    const s = SLOTS[i];
+    if (state.towers.find(t => t.slot === i)) continue;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, 22, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(100,100,180,0.5)';
+    ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(100,100,180,0.15)';
+    ctx.fill();
+    ctx.fillStyle = 'rgba(180,180,220,0.7)';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(i + 1, s.x, s.y);
+  }
+}
+
+function drawTube() {
+  const last = PATH[PATH.length - 1];
+  ctx.save();
+  ctx.translate(last.x + 20, last.y);
+  ctx.fillStyle = 'rgba(150,200,255,0.2)';
+  ctx.strokeStyle = '#80c0ff'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(-10, -25, 20, 50, 8); ctx.fill(); ctx.stroke();
+  const hpRatio = state.tubeHP / state.tubeMaxHP;
+  const pulse = 1 + Math.sin(performance.now() / 200) * 0.05 * (1 - hpRatio);
+  ctx.fillStyle = hpRatio > 0.5 ? '#60d0ff' : hpRatio > 0.25 ? '#ffb060' : '#ff5050';
+  ctx.beginPath();
+  ctx.roundRect(-8, -25 + 50 * (1 - hpRatio), 16, 50 * hpRatio * pulse, 6);
+  ctx.fill();
+  ctx.fillStyle = '#80c0ff';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`HP ${state.tubeHP}/${state.tubeMaxHP}`, 0, -35);
+  ctx.restore();
+  ctx.font = '20px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('🧪', last.x + 20, last.y);
+}
+
+function drawTowers() {
+  const now = performance.now();
+  for (const t of state.towers) {
+    const s = SLOTS[t.slot];
+    const atom = ATOM_TYPES[t.type];
+    const sub = t.sub ? SUBSTANCES[t.sub] : null;
+    
+    if (sub) {
+      const grad = ctx.createRadialGradient(s.x, s.y, 5, s.x, s.y, 32);
+      grad.addColorStop(0, sub.color + '60');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(s.x, s.y, 32, 0, Math.PI * 2); ctx.fill();
+    }
+    
+    for (let r = 0; r < atom.rings; r++) {
+      const radius = 12 + r * 7;
+      const tilt = r * 0.6;
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(tilt);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, radius, radius * 0.5, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = atom.color + '90';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      for (let e = 0; e < t.electronsPerRing; e++) {
+        const phase = now / 500 + r * Math.PI * 0.7 + (e / t.electronsPerRing) * Math.PI * 2;
+        const ex = Math.cos(phase) * radius;
+        const ey = Math.sin(phase) * radius * 0.5;
+        const glow = ctx.createRadialGradient(ex, ey, 0, ex, ey, 7);
+        glow.addColorStop(0, sub ? sub.color : '#ffffff');
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(ex, ey, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(ex, ey, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = sub ? sub.color : '#ffffff';
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    
+    for (const anim of t.shotAnimations) {
+      const radius = 12 + anim.ring * 7;
+      const alpha = anim.life / anim.maxLife;
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(anim.ring * 0.6);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, radius + (1 - alpha) * 10, (radius + (1 - alpha) * 10) * 0.5, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = sub ? sub.color : '#80c0ff';
+      ctx.globalAlpha = alpha * 0.8; ctx.lineWidth = 3; ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+    
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = atom.color; ctx.fill();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(t.type, s.x, s.y - 28);
+    
+    if (sub) {
+      ctx.fillStyle = sub.color;
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText(sub.name, s.x, s.y + 28);
+    }
+  }
+}
+
+function drawQuarks() {
+  for (const q of state.quarks) {
+    const wob = Math.sin(q.wobble) * 2;
+    const dx = q.x + wob, dy = q.y;
+    
+    // Свечение крушителя
+    if (q.isSmash) {
+      const glow = ctx.createRadialGradient(dx, dy, 0, dx, dy, q.size + 12);
+      glow.addColorStop(0, 'rgba(255,80,80,0.6)');
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(dx, dy, q.size + 12, 0, Math.PI * 2); ctx.fill();
+    }
+    // Свечение быстрого кварка
+    if (q.isFast && !q.isSmash) {
+      const glow = ctx.createRadialGradient(dx, dy, 0, dx, dy, q.size + 8);
+      glow.addColorStop(0, 'rgba(255,220,80,0.5)');
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(dx, dy, q.size + 8, 0, Math.PI * 2); ctx.fill();
+    }
+    
+    ctx.beginPath(); ctx.arc(dx, dy, q.size, 0, Math.PI * 2);
+    ctx.fillStyle = q.color; ctx.fill();
+    ctx.strokeStyle = q.isSmash ? '#ff4040' : '#ffffff40';
+    ctx.lineWidth = q.isSmash ? 3 : 2;
+    ctx.stroke();
+    
+    const grad = ctx.createRadialGradient(dx - 3, dy - 3, 1, dx, dy, q.size);
+    grad.addColorStop(0, 'rgba(255,255,255,0.4)');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(dx, dy, q.size, 0, Math.PI * 2); ctx.fill();
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(q.symbol, dx, dy + 1);
+
+    // Внутренние дуги крушителя (жёлтые)
+    if (q.isSmash) {
+      const t = performance.now() / 200;
+      for (let i = 0; i < 2; i++) {
+        const ang = t + i * Math.PI;
+        ctx.beginPath();
+        ctx.arc(dx, dy, q.size - 3, ang, ang + Math.PI * 0.7);
+        ctx.strokeStyle = '#ffff40';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+    // Маркер "быстрый" — маленькие стрелки сверху
+    if (q.isFast && !q.isSmash) {
+      ctx.fillStyle = '#ffd060';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.fillText('»»', dx, dy - q.size - 4);
+    }
+    
+    if (q.hp < q.maxHp) {
+      const w = q.isSmash ? 32 : 26, h = 3;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(dx - w/2, dy - q.size - 9, w, h);
+      ctx.fillStyle = '#80ff80';
+      ctx.fillRect(dx - w/2, dy - q.size - 9, w * (q.hp / q.maxHp), h);
+    }
+    if (q.resist) {
+      const icons = {fire:'🔥', acid:'🧪', plasma:'🌩️', electric:'⚡'};
+      ctx.font = '11px sans-serif';
+      ctx.fillText(icons[q.resist], dx + q.size - 2, dy - q.size + 2);
+    }
+    if (q.slowTimer > 0) {
+      ctx.beginPath(); ctx.arc(dx, dy, q.size + 3, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(192,96,255,0.6)'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    if (q.dotTimer > 0) {
+      ctx.beginPath(); ctx.arc(dx, dy, q.size + 5, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(128,255,96,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+    }
+  }
+}
+
+function drawProjectiles() {
+  for (const p of state.projectiles) {
+    for (let i = 0; i < p.trail.length; i++) {
+      const tr = p.trail[i];
+      const alpha = (tr.life / 220) * (i / p.trail.length) * 0.6;
+      ctx.globalAlpha = alpha;
+      if (p.projType === 'electric') {
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      } else if (p.projType === 'fire') {
+        const g = ctx.createRadialGradient(tr.x, tr.y, 0, tr.x, tr.y, 6);
+        g.addColorStop(0, '#ffd060');
+        g.addColorStop(0.5, '#ff5030');
+        g.addColorStop(1, 'transparent');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, 6, 0, Math.PI * 2); ctx.fill();
+      } else if (p.projType === 'acid') {
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      } else if (p.projType === 'plasma') {
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, 2 + i * 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    
+    if (p.projType === 'fire') drawFireball(p);
+    else if (p.projType === 'electric') drawLightning(p);
+    else if (p.projType === 'acid') drawAcidDrop(p);
+    else if (p.projType === 'plasma') drawPlasmaBall(p);
+    else drawElectron(p);
+  }
+}
+
+function drawElectron(p) {
+  const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 10);
+  glow.addColorStop(0, p.color);
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(p.x, p.y, 10, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.strokeStyle = p.color; ctx.lineWidth = 1.5; ctx.stroke();
+}
+
+function drawFireball(p) {
+  const g1 = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 18);
+  g1.addColorStop(0, 'rgba(255,220,120,0.9)');
+  g1.addColorStop(0.4, 'rgba(255,120,40,0.7)');
+  g1.addColorStop(1, 'transparent');
+  ctx.fillStyle = g1;
+  ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, Math.PI * 2); ctx.fill();
+  const flicker = 1 + Math.sin(p.flightTime / 50) * 0.15;
+  const g2 = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 7 * flicker);
+  g2.addColorStop(0, '#ffffff');
+  g2.addColorStop(0.5, '#ffd060');
+  g2.addColorStop(1, '#ff5030');
+  ctx.fillStyle = g2;
+  ctx.beginPath(); ctx.arc(p.x, p.y, 7 * flicker, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawLightning(p) {
+  if (p.trail.length < 2) return;
+  ctx.strokeStyle = '#a0e8ff';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#60d0ff';
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  for (let i = p.trail.length - 1; i >= 0; i -= 2) {
+    const tr = p.trail[i];
+    const zig = Math.sin(p.zigPhase + i) * 6;
+    ctx.lineTo(tr.x + zig, tr.y - zig);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(160,232,255,0.4)'; ctx.fill();
+}
+
+function drawAcidDrop(p) {
+  const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 12);
+  g.addColorStop(0, 'rgba(180,255,140,0.6)');
+  g.addColorStop(1, 'transparent');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(p.x, p.y, 12, 0, Math.PI * 2); ctx.fill();
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  if (p.target) {
+    const ang = Math.atan2(p.target.y - p.y, p.target.x - p.x);
+    ctx.rotate(ang);
+  }
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 7, 4.5, 0, 0, Math.PI * 2);
+  const g2 = ctx.createRadialGradient(-2, -1, 0, 0, 0, 7);
+  g2.addColorStop(0, '#e0ffc0');
+  g2.addColorStop(0.6, '#80ff60');
+  g2.addColorStop(1, '#40a030');
+  ctx.fillStyle = g2;
+  ctx.fill();
+  ctx.beginPath(); ctx.arc(-2, -1, 1.5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fill();
+  ctx.restore();
+}
+
+function drawPlasmaBall(p) {
+  const t = p.flightTime / 100;
+  const g1 = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 18);
+  g1.addColorStop(0, 'rgba(200,120,255,0.8)');
+  g1.addColorStop(0.5, 'rgba(140,60,200,0.5)');
+  g1.addColorStop(1, 'transparent');
+  ctx.fillStyle = g1;
+  ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 3; i++) {
+    const ang = t * 2 + i * Math.PI * 0.67;
+    const rad = 7 + Math.sin(t * 3 + i) * 2;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, rad, ang, ang + Math.PI * 1.2);
+    ctx.strokeStyle = i % 2 === 0 ? '#e0a0ff' : '#a060ff';
+    ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(220,160,255,0.5)'; ctx.fill();
+}
+
+function drawEffects() {
+  for (const e of state.effects) {
+    const alpha = e.life / e.maxLife;
+    ctx.globalAlpha = alpha;
+    if (e.isEmoji) {
+      ctx.font = e.text === '💥' ? '28px sans-serif' : '16px sans-serif';
+    } else {
+      ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = e.color;
+    }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(e.text, e.x, e.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ==================== ВВОД ====================
+let touchStart = null;
+let lastTapTime = 0;
+let lastTapSlot = -1;
+const DOUBLE_TAP_MS = 400;
+
+function handleTapFixed(logicX, logicY) {
+  const now = performance.now();
+  let hitSlot = -1;
+  let bestDist = 30;
+  for (let i = 0; i < SLOTS.length; i++) {
+    const s = SLOTS[i];
+    const d = Math.hypot(logicX - s.x, logicY - s.y);
+    if (d < bestDist) { bestDist = d; hitSlot = i; }
+  }
+  if (hitSlot === -1) return;
+  
+  const existing = state.towers.find(t => t.slot === hitSlot);
+  if (!existing) {
+    if (state.selectedAtom) {
+      placeTower(hitSlot, state.selectedAtom);
+    } else {
+      toast('Выбери элемент внизу или во вкладке «Элементы»');
+    }
+    lastTapSlot = -1;
+    return;
+  }
+  
+  if (lastTapSlot === hitSlot && (now - lastTapTime) < DOUBLE_TAP_MS) {
+    removeTower(hitSlot);
+    lastTapSlot = -1;
+    lastTapTime = 0;
+    return;
+  }
+  
+  if (state.selectedSubstance) {
+    applySubstance(existing, state.selectedSubstance);
+  } else if (existing.sub) {
+    state.substances[existing.sub] = (state.substances[existing.sub] || 0) + 1;
+    toast(`Снято ${existing.sub}`);
+    existing.sub = null;
+    save(); renderPanel();
+  } else {
+    toast('Ещё раз тапни — удалить');
+  }
+  
+  lastTapSlot = hitSlot;
+  lastTapTime = now;
+}
+
+cv.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  Sound.init();
+  if (state.gameOver) return;
+  const t = e.touches[0];
+  touchStart = {
+    x: t.clientX, y: t.clientY,
+    logic: screenToLogic(t.clientX, t.clientY),
+  };
+}, {passive: false});
+
+cv.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  if (state.gameOver || !touchStart) { touchStart = null; return; }
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
+  if (Math.hypot(dx, dy) < 12) {
+    handleTapFixed(touchStart.logic.x, touchStart.logic.y);
+  }
+  touchStart = null;
+}, {passive: false});
+
+cv.addEventListener('click', (e) => {
+  Sound.init();
+  if (state.gameOver) return;
+  const logic = screenToLogic(e.clientX, e.clientY);
+  handleTapFixed(logic.x, logic.y);
+});
+
+// ==================== ЦИКЛ ====================
+let lastTime = performance.now();
+function loop(now) {
+  const dt = Math.min(50, now - lastTime);
+  lastTime = now;
+  
+  if (state && !state.gameOver) {
+    updateWaves(dt);
+    updateTowers(dt);
+    updateProjectiles(dt);
+    updateQuarks(dt);
+    updateEffects(dt);
+    updateHeader();
+  }
+  if (state) draw();
+  requestAnimationFrame(loop);
+}
+
+// ==================== АВТОСОХРАНЕНИЕ ====================
+setInterval(() => { if (state && !state.gameOver) save(); }, 5000);
+window.addEventListener('beforeunload', () => { if (state && !state.gameOver) save(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && state && !state.gameOver) save();
+});
+
+// ==================== СТАРТ ====================
+state = defaultState();
+updateMenu();
+showScreen('menu');
+resizeCanvas();
+requestAnimationFrame(loop);
+
+// Полифилл roundRect
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
+  };
+}
+</script>
+</body>
+  </html>
