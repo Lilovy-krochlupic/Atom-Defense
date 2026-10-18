@@ -25,14 +25,14 @@
   #game { display: flex; flex-direction: column; height: 100%; }
 
   #game-header {
-    display: flex; align-items: center; padding: 8px 10px;
+    display: flex; align-items: center; padding: 6px 8px;
     background: linear-gradient(180deg, #10142a 0%, #0a0d1c 100%);
-    border-bottom: 1px solid var(--line); gap: 6px; flex-shrink: 0;
+    border-bottom: 1px solid var(--line); gap: 4px; flex-shrink: 0;
     box-shadow: 0 2px 16px rgba(0,0,0,0.35);
     position: relative; z-index: 6;
   }
   #game-header .stat {
-    font-size: 12px; font-weight: 700; padding: 5px 9px;
+    font-size: 11px; font-weight: 700; padding: 4px 7px;
     border-radius: 8px; background: rgba(20,26,52,0.9);
     border: 1px solid var(--line);
     display: flex; align-items: center; gap: 3px;
@@ -46,10 +46,10 @@
   .hdr-btn {
     background: rgba(20,26,52,0.9); color: var(--good);
     border: 1px solid var(--line-2); border-radius: 8px;
-    padding: 6px 10px; font-size: 13px; font-weight: 800;
+    padding: 5px 8px; font-size: 12px; font-weight: 800;
     cursor: pointer; font-family: inherit;
     transition: all 0.15s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    min-width: 38px;
+    min-width: 32px;
   }
   .hdr-btn:active { transform: scale(0.94); }
   .hdr-btn.active {
@@ -73,8 +73,9 @@
     border-top: 1px solid var(--line); flex-shrink: 0;
   }
   #tabs button {
-    flex: 1; padding: 11px 4px; background: transparent; color: var(--muted);
-    border: none; font-size: 12px; font-weight: 700; cursor: pointer;
+    flex: 1; padding: 9px 4px;
+    background: transparent; color: var(--muted);
+    border: none; font-size: 11px; font-weight: 700; cursor: pointer;
     transition: all 0.15s; border-bottom: 2px solid transparent;
     font-family: inherit; letter-spacing: 0.5px;
   }
@@ -85,32 +86,32 @@
   }
 
   #panel {
-    height: 38vh; min-height: 220px;
+    height: 30vh; min-height: 180px;
     background: linear-gradient(180deg, #0e122a 0%, #0a0d1c 100%);
     border-top: 1px solid var(--line); overflow-y: auto;
-    padding: 10px; flex-shrink: 0; -webkit-overflow-scrolling: touch;
+    padding: 8px; flex-shrink: 0; -webkit-overflow-scrolling: touch;
   }
   #panel::-webkit-scrollbar { width: 5px; }
   #panel::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
   #panel::-webkit-scrollbar-track { background: transparent; }
 
   #panel h3 {
-    font-size: 11px; margin-bottom: 8px; color: var(--accent);
+    font-size: 10px; margin-bottom: 6px; color: var(--accent);
     text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
   }
   #panel h3::before {
-    content:''; width: 3px; height: 12px; border-radius: 2px;
+    content:''; width: 3px; height: 10px; border-radius: 2px;
     background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
     box-shadow: 0 0 8px var(--accent);
   }
-  #panel h3:not(:first-child) { margin-top: 14px; }
+  #panel h3:not(:first-child) { margin-top: 10px; }
 
   .row {
     display: flex; align-items: center; gap: 8px;
     background: linear-gradient(180deg, rgba(28,34,68,0.7) 0%, rgba(20,24,49,0.7) 100%);
     border: 1px solid var(--line); border-radius: 10px;
-    padding: 9px; margin-bottom: 7px; font-size: 13px;
+    padding: 7px; margin-bottom: 6px; font-size: 12px;
     transition: all 0.15s;
   }
   .row.selected {
@@ -121,29 +122,29 @@
   .row.locked { opacity: 0.45; }
   .row.disabled { opacity: 0.65; }
 
-  .row .symbol { font-size: 20px; font-weight: 900; width: 30px; text-align: center; }
+  .row .symbol { font-size: 18px; font-weight: 900; width: 26px; text-align: center; }
   .row .info { flex: 1; min-width: 0; }
-  .row .name { font-weight: 800; font-size: 13px; margin-bottom: 3px; letter-spacing: 0.3px; }
-  .row .desc { color: var(--muted); font-size: 10.5px; line-height: 1.4; }
-  .row .cost { color: var(--gold); font-size: 11px; font-weight: 800; margin-top: 3px; }
+  .row .name { font-weight: 800; font-size: 12px; margin-bottom: 2px; letter-spacing: 0.3px; }
+  .row .desc { color: var(--muted); font-size: 10px; line-height: 1.3; }
+  .row .cost { color: var(--gold); font-size: 10px; font-weight: 800; margin-top: 2px; }
 
-  .counter { display: flex; align-items: center; gap: 4px; }
+  .counter { display: flex; align-items: center; gap: 3px; }
   .counter button {
-    width: 28px; height: 28px; border-radius: 7px;
+    width: 24px; height: 24px; border-radius: 6px;
     background: linear-gradient(180deg, #2a3260 0%, #1c2244 100%);
     color: #ffffff; border: 1px solid var(--line-2);
-    font-size: 16px; font-weight: 800; cursor: pointer;
+    font-size: 14px; font-weight: 800; cursor: pointer;
     font-family: inherit;
   }
   .counter button:active { transform: scale(0.9); }
   .counter button:disabled { opacity: 0.4; }
-  .counter .val { width: 26px; text-align: center; font-weight: 800; color: var(--gold); font-size: 13px; }
+  .counter .val { width: 22px; text-align: center; font-weight: 800; color: var(--gold); font-size: 12px; }
 
   .buy-btn {
-    padding: 7px 13px;
+    padding: 6px 10px;
     background: linear-gradient(135deg, #4f6bff 0%, #7c5cff 100%);
     color: #ffffff; border: 1px solid #8f7dff;
-    border-radius: 8px; font-size: 11px; font-weight: 800;
+    border-radius: 8px; font-size: 10px; font-weight: 800;
     cursor: pointer; font-family: inherit; letter-spacing: 0.4px;
     box-shadow: 0 4px 12px rgba(106,139,255,0.35);
   }
@@ -154,10 +155,10 @@
   }
 
   .upg-btn {
-    padding: 6px 9px;
+    padding: 5px 8px;
     background: linear-gradient(135deg, #4f6bff 0%, #7c5cff 100%);
     color: #ffffff; border: 1px solid #8f7dff;
-    border-radius: 7px; font-size: 10px; font-weight: 800;
+    border-radius: 7px; font-size: 9px; font-weight: 800;
     cursor: pointer; white-space: nowrap; font-family: inherit;
     box-shadow: 0 3px 10px rgba(106,139,255,0.3);
   }
@@ -176,23 +177,23 @@
   }
 
   #tube-inventory {
-    position: absolute; bottom: 8px; left: 8px; right: 8px;
+    position: absolute; bottom: 6px; left: 6px; right: 6px;
     background: linear-gradient(180deg, rgba(16,20,42,0.92) 0%, rgba(10,13,28,0.92) 100%);
     border: 1px solid var(--line-2);
-    border-radius: 12px; padding: 7px 9px;
-    display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+    border-radius: 10px; padding: 6px 8px;
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     z-index: 5; pointer-events: auto;
     box-shadow: 0 6px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
   }
   #tube-inventory .label {
-    color: var(--muted); font-size: 10px; margin-right: 4px; font-weight: 800;
+    color: var(--muted); font-size: 9px; margin-right: 2px; font-weight: 800;
     letter-spacing: 0.5px;
   }
   .inv-item {
-    display: flex; align-items: center; gap: 4px;
-    padding: 4px 8px; background: rgba(28,34,68,0.8);
-    border-radius: 7px; font-size: 12px; font-weight: 800;
+    display: flex; align-items: center; gap: 3px;
+    padding: 3px 6px; background: rgba(28,34,68,0.8);
+    border-radius: 6px; font-size: 11px; font-weight: 800;
     cursor: pointer; border: 1px solid transparent;
     transition: all 0.15s;
   }
@@ -201,7 +202,7 @@
     background: rgba(26,60,44,0.9);
     box-shadow: 0 0 12px rgba(82,255,168,0.35);
   }
-  .inv-item .count { color: var(--gold); font-size: 10.5px; }
+  .inv-item .count { color: var(--gold); font-size: 10px; }
 
   .overlay {
     position: absolute; inset: 0;
@@ -218,25 +219,26 @@
   .overlay p { color: var(--muted); margin-bottom: 26px; font-size: 14px; line-height: 1.7; max-width: 90%; }
 
   #toast {
-    position: absolute; top: 62px; left: 50%; transform: translateX(-50%) translateY(-6px);
+    position: absolute; top: 50px; left: 50%; transform: translateX(-50%) translateY(-6px);
     background: linear-gradient(180deg, rgba(28,34,68,0.98) 0%, rgba(16,20,42,0.98) 100%);
     color: var(--text);
-    padding: 9px 18px; border-radius: 10px; font-size: 12.5px; font-weight: 800;
+    padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800;
     pointer-events: none; opacity: 0; transition: opacity 0.25s, transform 0.25s;
     z-index: 50; border: 1px solid var(--line-2);
-    max-width: 90%; text-align: center;
+    max-width: 85%; text-align: center;
     box-shadow: 0 8px 28px rgba(0,0,0,0.6), 0 0 20px rgba(106,139,255,0.15);
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   #selected-hint {
-    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
     background: linear-gradient(180deg, rgba(28,34,68,0.96) 0%, rgba(16,20,42,0.96) 100%);
-    padding: 7px 16px; border-radius: 20px;
-    font-size: 12px; font-weight: 800; color: var(--good);
+    padding: 5px 12px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 800; color: var(--good);
     border: 1px solid var(--accent); z-index: 5;
-    display: none; max-width: 90%; text-align: center;
+    display: none; max-width: 85%; text-align: center;
     box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 16px rgba(106,139,255,0.25);
+    letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   #selected-hint.show { display: block; }
 
@@ -251,42 +253,36 @@
   #tutorial-modal .modal-card {
     background: linear-gradient(180deg, #141a36 0%, #0b0e1e 100%);
     border: 1px solid var(--line-2);
-    border-radius: 20px; padding: 22px;
-    max-width: 460px; width: 100%;
-    max-height: 88vh; overflow-y: auto; text-align: left;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(106,139,255,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+    border-radius: 20px; padding: 20px;
+    max-width: 420px; width: 100%;
+    max-height: 85vh; overflow-y: auto; text-align: left;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(106,139,255,0.2);
     position: relative;
   }
-  #tutorial-modal .modal-card::before {
-    content:''; position:absolute; top: 0; left: 20%; right: 20%; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    box-shadow: 0 0 12px var(--accent);
-  }
   #tutorial-modal .modal-title {
-    font-size: 22px; margin-bottom: 6px; text-align: center; font-weight: 900;
-    letter-spacing: 1px;
+    font-size: 20px; margin-bottom: 6px; text-align: center; font-weight: 900;
     background: linear-gradient(135deg, #8fb4ff 0%, #b89bff 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   #tutorial-modal .modal-sub {
-    color: var(--muted); font-size: 12px; margin-bottom: 16px; text-align: center;
+    color: var(--muted); font-size: 11px; margin-bottom: 12px; text-align: center;
   }
   #tutorial-modal .modal-step-title {
-    color: var(--accent); font-size: 12px; text-transform: uppercase;
-    letter-spacing: 1.5px; margin-bottom: 12px; font-weight: 800;
-    padding-bottom: 8px; border-bottom: 1px dashed var(--line-2);
+    color: var(--accent); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 800;
+    padding-bottom: 6px; border-bottom: 1px dashed var(--line-2);
   }
   #tutorial-modal .modal-text {
-    color: var(--text); font-size: 14px; line-height: 1.6; margin-bottom: 18px; min-height: 90px;
+    color: var(--text); font-size: 13px; line-height: 1.5; margin-bottom: 14px; min-height: 80px;
   }
   #tutorial-modal .modal-text b { color: #a8c4ff; }
   #tutorial-modal .modal-text em { color: var(--good); font-style: normal; }
   #tutorial-modal .modal-nav {
     display: flex; gap: 8px; justify-content: space-between;
-    align-items: center; margin-top: 10px;
+    align-items: center; margin-top: 8px;
   }
   #tutorial-modal .modal-nav button {
-    padding: 11px 18px; border-radius: 10px; font-size: 13px; font-weight: 800;
+    padding: 9px 14px; border-radius: 10px; font-size: 12px; font-weight: 800;
     cursor: pointer; font-family: inherit; border: 1px solid var(--line-2);
     background: linear-gradient(180deg, #1c2244 0%, #141831 100%);
     color: var(--text); transition: all 0.15s;
@@ -301,9 +297,9 @@
     background: linear-gradient(180deg, #2a1320 0%, #1a0b14 100%);
     color: #ff8fa5; border-color: #5a2438;
   }
-  #tutorial-modal .modal-progress { display: flex; gap: 5px; justify-content: center; margin-bottom: 14px; }
+  #tutorial-modal .modal-progress { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; }
   #tutorial-modal .modal-progress .dot {
-    width: 9px; height: 9px; border-radius: 50%;
+    width: 8px; height: 8px; border-radius: 50%;
     background: #2a3260; transition: all 0.2s;
   }
   #tutorial-modal .modal-progress .dot.done { background: var(--accent); }
@@ -322,22 +318,22 @@
   #code-modal .modal-card {
     background: linear-gradient(180deg, #141a36 0%, #0b0e1e 100%);
     border: 1px solid var(--line-2);
-    border-radius: 20px; padding: 20px;
-    max-width: 480px; width: 100%;
-    max-height: 88vh; overflow-y: auto; text-align: left;
+    border-radius: 20px; padding: 16px;
+    max-width: 440px; width: 100%;
+    max-height: 85vh; overflow-y: auto; text-align: left;
     box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(106,139,255,0.2);
   }
   #code-modal .modal-title {
-    font-size: 20px; margin-bottom: 6px; text-align: center; font-weight: 900;
+    font-size: 18px; margin-bottom: 4px; text-align: center; font-weight: 900;
     background: linear-gradient(135deg, #8fb4ff 0%, #b89bff 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   #code-modal .modal-sub {
-    color: var(--muted); font-size: 12px; margin-bottom: 16px; text-align: center;
+    color: var(--muted); font-size: 11px; margin-bottom: 12px; text-align: center;
   }
-  #code-modal .tabs-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  #code-modal .tabs-row { display: flex; gap: 6px; margin-bottom: 10px; }
   #code-modal .tabs-row button {
-    flex: 1; padding: 9px; border-radius: 9px; font-size: 12px; font-weight: 800;
+    flex: 1; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 800;
     cursor: pointer; font-family: inherit; border: 1px solid var(--line-2);
     background: linear-gradient(180deg, #1c2244 0%, #141831 100%); color: var(--muted);
   }
@@ -346,19 +342,19 @@
     color: #fff; border-color: #8f7dff;
   }
   #code-modal textarea {
-    width: 100%; padding: 10px; border-radius: 9px;
+    width: 100%; padding: 8px; border-radius: 8px;
     background: rgba(10,13,28,0.9); border: 1px solid var(--line-2);
-    color: var(--text); font-size: 11px; font-family: 'SF Mono', Menlo, Consolas, monospace;
-    resize: none; line-height: 1.5; min-height: 100px;
+    color: var(--text); font-size: 10px; font-family: 'SF Mono', Menlo, Consolas, monospace;
+    resize: none; line-height: 1.4; min-height: 80px;
   }
-  #code-modal .modal-hint { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 10px 0; }
+  #code-modal .modal-hint { color: var(--muted); font-size: 10px; line-height: 1.4; margin: 8px 0; }
   #code-modal .modal-hint b { color: var(--good); }
   #code-modal .modal-nav {
-    display: flex; gap: 8px; justify-content: space-between;
-    align-items: center; margin-top: 12px;
+    display: flex; gap: 6px; justify-content: space-between;
+    align-items: center; margin-top: 10px;
   }
   #code-modal .modal-nav button {
-    padding: 11px 18px; border-radius: 10px; font-size: 13px; font-weight: 800;
+    padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 800;
     cursor: pointer; font-family: inherit; border: 1px solid var(--line-2);
     background: linear-gradient(180deg, #1c2244 0%, #141831 100%);
     color: var(--text); transition: all 0.15s;
@@ -372,7 +368,7 @@
     background: linear-gradient(180deg, #2a1320 0%, #1a0b14 100%);
     color: #ff8fa5; border-color: #5a2438;
   }
-  .code-status { font-size: 11px; font-weight: 700; margin-top: 8px; text-align: center; min-height: 16px; }
+  .code-status { font-size: 10px; font-weight: 700; margin-top: 6px; text-align: center; min-height: 14px; }
   .code-status.ok { color: var(--good); }
   .code-status.err { color: var(--bad); }
 
@@ -419,7 +415,7 @@
     <div class="pause-icon">⏸</div>
     <h1>ПАУЗА</h1>
     <p>Игра остановлена.</p>
-    <button id="btn-resume" style="width:220px;padding:14px;background:linear-gradient(135deg,#4f6bff,#7c5cff);border:1px solid #8f7dff;border-radius:12px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;">▶ Продолжить</button>
+    <button id="btn-resume" style="width:220px;padding:14px;background:linear-gradient(135deg,#4f6bff,#7c5cff);border:1px solid #8f7dff;border-radius:12px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;margin-top:10px;">▶ Продолжить</button>
   </div>
 
   <div class="overlay" id="overlay-gameover">
@@ -565,12 +561,12 @@ const TUBE_UPGRADE_COST = 50;
 const TUBE_UPGRADE_HP = 2;
 const ELECTRON_UPGRADE_COST = 10;
 const HINT_DURATION = 5000;
-const SAVE_KEY = 'atomDefenseSaveV21';
-const TUTORIAL_KEY = 'atomDefenseTutorialV21';
+const SAVE_KEY = 'atomDefenseSaveV22';
+const TUTORIAL_KEY = 'atomDefenseTutorialV22';
 
 const SMASH_HITS_TO_DESTROY = 3;
-const ATOM_REWARD = 1;
-const SMASH_REWARD = 5;
+const ATOM_REWARD = 1;       // ✅ Обычные кварки дают 1 атом
+const SMASH_REWARD = 5;      // ✅ Крушитель дает 5 атомов
 
 // ==================== ПУТИ ====================
 let PATH = LEVELS[0].path;
@@ -678,7 +674,7 @@ function save() {
       spawnTimer: state.spawnTimer, spawnInterval: state.spawnInterval,
       waveNumber: state.waveNumber, bossCount: state.bossCount,
       buyCounts: state.buyCounts, totalSpawned: state.totalSpawned,
-      savedAt: Date.now(), version: 21,
+      savedAt: Date.now(), version: 22,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(s));
   } catch(e) {}
@@ -689,7 +685,7 @@ function load() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw);
-    if (!s || s.version !== 21) return null;
+    if (!s || s.version !== 22) return null;
     const ns = defaultState();
     ns.levelIndex = typeof s.levelIndex === 'number' ? s.levelIndex : 0;
     setLevel(LEVELS[ns.levelIndex].id);
@@ -737,7 +733,6 @@ const ctx = cv.getContext('2d', { alpha: false });
 let cw = 0, ch = 0;
 let viewScale = 1, viewOffX = 0, viewOffY = 0, viewDPR = 1;
 
-// Плавающая сетка — кэшируется в offscreen и перестраивается раз в ~120 мс
 let bgCanvas = null;
 let bgCtx = null;
 let bgBuilt = false;
@@ -760,7 +755,6 @@ function buildBgCanvas(now) {
   bgCtx.translate(viewOffX, viewOffY);
   bgCtx.scale(viewScale, viewScale);
 
-  // Радиальный фон
   const g = bgCtx.createRadialGradient(CW/2, CH/2, 50, CW/2, CH/2, Math.max(CW,CH)*0.72);
   g.addColorStop(0, 'rgba(28, 48, 150, 0.22)');
   g.addColorStop(0.55, 'rgba(60, 30, 140, 0.10)');
@@ -768,14 +762,12 @@ function buildBgCanvas(now) {
   bgCtx.fillStyle = g;
   bgCtx.fillRect(0, 0, CW, CH);
 
-  // Плавающая сетка (синусоидальная деформация)
   const t = now / 1000;
   const AMP = 3.2;
   const SEG = 22;
 
   bgCtx.strokeStyle = 'rgba(70, 120, 255, 0.16)';
   bgCtx.lineWidth = 1;
-  // Вертикальные линии
   for (let x = 0; x <= CW; x += GRID_STEP) {
     bgCtx.beginPath();
     let first = true;
@@ -789,7 +781,6 @@ function buildBgCanvas(now) {
     }
     bgCtx.stroke();
   }
-  // Горизонтальные линии
   for (let y = 0; y <= CH; y += GRID_STEP) {
     bgCtx.beginPath();
     let first = true;
@@ -804,12 +795,10 @@ function buildBgCanvas(now) {
     bgCtx.stroke();
   }
 
-  // Лёгкий CRT-отблеск
   const flicker = Math.sin(now / 400) * 0.015 + 0.025;
   bgCtx.fillStyle = `rgba(80, 130, 255, ${flicker})`;
   bgCtx.fillRect(0, 0, CW, CH);
 
-  // Рамка
   bgCtx.strokeStyle = 'rgba(106, 139, 255, 0.35)';
   bgCtx.lineWidth = 2;
   bgCtx.strokeRect(1, 1, CW - 2, CH - 2);
@@ -932,7 +921,7 @@ const TUTORIAL_STEPS_MODAL = [
   { title: 'ШАГ 2/8 · Как ставить башни',
     text: 'На карте есть <em>пунктирные круги с цифрами</em> — это слоты для башен. Внизу экрана — <b>инвентарь элементов</b> (плашки H, Li, Cr, O с количеством).<br><br>1) Тапни по элементу в инвентаре — он подсветится зелёным.<br>2) Тапни по пустому слоту — там появится башня-атом.' },
   { title: 'ШАГ 3/8 · Атомы = валюта',
-    text: 'За каждого убитого кварка падает <b>2 атома 💠</b> (за крушителя — 5). Смотри счётчик 💠 в шапке.<br><br>Трать атомы во вкладке <b>«⚛️ Элементы»</b>: там покупаются новые элементы (Li, Cr, O) и апгрейды колец.' },
+    text: 'За каждого убитого обычного кварка падает <b>1 атом 💠</b> (за крушителя — 5). Смотри счётчик 💠 в шапке.<br><br>Трать атомы во вкладке <b>«⚛️ Элементы»</b>: там покупаются новые элементы (Li, Cr, O) и апгрейды колец.' },
   { title: 'ШАГ 4/8 · Кольца и выстрелы',
     text: 'У каждой башни есть <b>кольца</b> с электронами. Кольца стреляют <b>по очереди</b>: одно кольцо — выстрел раз в 2 секунды.<br><br>Чем больше колец у атома (H=1, Li=2, Cr=3, O=4) — тем чаще суммарный огонь.' },
   { title: 'ШАГ 5/8 · Как объединять (лаборатория)',
@@ -952,7 +941,7 @@ function showTutorialModal(replay = false) {
   modalStep = 0;
   modalReplayOnly = !!replay;
   tutorialActive = true;
-  isPaused = false; // пауза через отдельный флаг не нужна — блокируем через tutorialActive
+  isPaused = false;
   overlayPause.classList.remove('active');
   pauseBtn.textContent = '⏸';
   pauseBtn.classList.remove('active');
@@ -983,7 +972,6 @@ function closeTutorialModal() {
   tutorialActive = false;
   markTutorialSeen();
   if (!modalReplayOnly && state) {
-    // Только теперь запускаем волну 1
     state.spawnTimer = 3000;
     state.waveActive = false;
     state.quarks = [];
@@ -1038,7 +1026,7 @@ function simpleChecksum(str) {
 function generateCode() {
   if (!state) { codeOutput.value = ''; return; }
   const payload = {
-    v: 21,
+    v: 22,
     li: state.levelIndex,
     wn: state.waveNumber,
     at: Math.floor(state.atoms),
@@ -1057,7 +1045,7 @@ function generateCode() {
   const json = JSON.stringify(payload);
   const b64 = btoa(unescape(encodeURIComponent(json)));
   const checksum = simpleChecksum(json);
-  const code = 'AD21-' + checksum + '-' + b64;
+  const code = 'AD22-' + checksum + '-' + b64;
   codeOutput.value = code;
 }
 
@@ -1065,39 +1053,27 @@ function importCode(raw) {
   codeStatus.textContent = '';
   codeStatus.className = 'code-status';
   if (!raw || !raw.trim()) {
-    codeStatus.textContent = 'Пустой код';
-    codeStatus.classList.add('err');
-    return false;
+    codeStatus.textContent = 'Пустой код'; codeStatus.classList.add('err'); return false;
   }
   const code = raw.trim().replace(/\s+/g, '');
-  const m = code.match(/^AD21-([A-Z0-9]{6})-(.+)$/);
+  const m = code.match(/^AD22-([A-Z0-9]{6})-(.+)$/);
   if (!m) {
-    codeStatus.textContent = 'Неверный формат кода';
-    codeStatus.classList.add('err');
-    return false;
+    codeStatus.textContent = 'Неверный формат кода'; codeStatus.classList.add('err'); return false;
   }
-  const checksum = m[1];
-  const b64 = m[2];
+  const checksum = m[1], b64 = m[2];
   let json, payload;
   try {
     json = decodeURIComponent(escape(atob(b64)));
     payload = JSON.parse(json);
   } catch(e) {
-    codeStatus.textContent = 'Ошибка декодирования';
-    codeStatus.classList.add('err');
-    return false;
+    codeStatus.textContent = 'Ошибка декодирования'; codeStatus.classList.add('err'); return false;
   }
   if (simpleChecksum(json) !== checksum) {
-    codeStatus.textContent = 'Контрольная сумма не совпадает';
-    codeStatus.classList.add('err');
-    return false;
+    codeStatus.textContent = 'Контрольная сумма не совпадает'; codeStatus.classList.add('err'); return false;
   }
-  if (payload.v !== 21) {
-    codeStatus.textContent = 'Неподдерживаемая версия кода';
-    codeStatus.classList.add('err');
-    return false;
+  if (payload.v !== 22) {
+    codeStatus.textContent = 'Неподдерживаемая версия кода'; codeStatus.classList.add('err'); return false;
   }
-  // Восстанавливаем
   const ns = defaultState();
   ns.levelIndex = Math.max(0, Math.min(2, payload.li | 0));
   setLevel(LEVELS[ns.levelIndex].id);
@@ -1123,7 +1099,6 @@ function importCode(raw) {
     shotAnimations: [], smashHits: 0,
     spawnTime: performance.now() - 3000,
   }));
-  // Применяем
   state = ns;
   markHeaderDirty();
   markInventoryDirty();
@@ -2307,7 +2282,6 @@ function loop(now) {
 
 // ==================== СТАРТ ====================
 (function init() {
-  // Проверяем сохранение ДО инициализации туториала
   const loaded = load();
   if (loaded) {
     state = loaded;
@@ -2322,15 +2296,11 @@ function loop(now) {
   updateTubeInventory();
   updateSelectedHint();
 
-  // Показываем туториал при первом заходе ИЛИ если не пройден
-  // Условие: нет флага tutorial_seen ИЛИ игра совсем новая (нет сохранения)
   const tutorialSeen = isTutorialSeen();
   const isNewGame = !loaded;
   if (!tutorialSeen || isNewGame) {
-    // Стартуем туториал сразу, волна НЕ идёт
     setTimeout(() => showTutorialModal(false), 200);
   } else {
-    // Игра уже пройдена — волна стартует через 3 сек
     state.spawnTimer = 3000;
   }
 
@@ -2358,4 +2328,4 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 }
 </script>
 </body>
- </html>
+  </html>
